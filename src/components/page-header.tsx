@@ -11,11 +11,13 @@ export function PageHeader({
 }) {
   return (
     <div className="border-b border-border bg-background">
-      <div className="px-6 py-6 max-w-7xl mx-auto flex flex-wrap items-start justify-between gap-4">
+      <div className="px-6 py-6 max-w-7xl0 mx-auto flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
           {description && (
-            <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{description}</p>
+            <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
+              {description}
+            </p>
           )}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -25,7 +27,7 @@ export function PageHeader({
 }
 
 export function Section({ children }: { children: ReactNode }) {
-  return <div className="px-6 py-6 max-w-7xl mx-auto">{children}</div>;
+  return <div className="px-6 py-6 mx-auto">{children}</div>;
 }
 
 export function Card({
@@ -47,7 +49,11 @@ export function Card({
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div>
             {title && <h3 className="text-sm font-semibold">{title}</h3>}
-            {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+            {description && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {description}
+              </p>
+            )}
           </div>
           {action}
         </div>
