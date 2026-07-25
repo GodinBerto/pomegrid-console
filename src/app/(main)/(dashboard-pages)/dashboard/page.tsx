@@ -20,20 +20,29 @@ import {
   Percent,
 } from "lucide-react";
 import { PageHeader, Section, Card } from "@/components/page-header";
-import {
-  monthlySpend,
-  weeklyBurn,
-  kpis,
-  recentExpenses,
-} from "@/lib/dashboard-data";
 import Link from "next/link";
+import {
+  useDashboardOverview,
+  useDashboardBudgetChart,
+  useDashboardRecentExpenses,
+  useDashboardWeeklyBurn,
+} from "@/query/dashboard";
 
-function formatMoney(n: number) {
+function formatMoney(n: number | undefined) {
+  if (n === undefined) return "$0";
   return "$" + n.toLocaleString();
 }
 
 export default function DashboardPage() {
-  const spendPct = Math.round((kpis.spentThisMonth / kpis.monthlyBudget) * 100);
+  const { data: kpis, isLoading: kpisLoading } = useDashboardOverview();
+  const { data: monthlySpend, isLoading: spendLoading } = useDashboardBudgetChart();
+  const { data: recentExpenses, isLoading: expensesLoading } = useDashboardRecentExpenses();
+  const { data: weeklyBurn, isLoading: burnLoading } = useDashboardWeeklyBurn();
+
+  const spendPct =
+    kpis && kpis.monthlyBudget > 0
+      ? Math.round((kpis.spentThisMonth / kpis.monthlyBudget) * 100)
+      : 0;
 
   return (
     <>
@@ -55,37 +64,48 @@ export default function DashboardPage() {
       />
       <Section>
         {/* KPI row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Kpi
-            label="Monthly budget"
-            value={formatMoney(kpis.monthlyBudget)}
-            delta="+3.4%"
-            trend="up"
-            icon={Wallet}
-          />
-          <Kpi
-            label="Spent this month"
-            value={formatMoney(kpis.spentThisMonth)}
-            delta={`${spendPct}% of budget`}
-            trend={spendPct > 90 ? "down" : "up"}
-            icon={Percent}
-            accent="info"
-          />
-          <Kpi
-            label="Active workers"
-            value={String(kpis.activeWorkers)}
-            delta="+1 this month"
-            trend="up"
-            icon={Users}
-          />
-          <Kpi
-            label="Reports generated"
-            value={String(kpis.reportsGenerated)}
-            delta="+6 vs last mo"
-            trend="up"
-            icon={FileText}
-          />
-        </div>
+        {kpisLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="h-32 rounded-lg border border-border bg-card animate-pulse" />
+            <div className="h-32 rounded-lg border border-border bg-card animate-pulse" />
+            <div className="h-32 rounded-lg border border-border bg-card animate-pulse" />
+            <div className="h-32 rounded-lg border border-border bg-card animate-pulse" />
+          </div>
+        ) : kpis ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Kpi
+              label="Monthly budget"
+              value={formatMoney(kpis.monthlyBudget)}
+              delta="+3.4%" // Delta could come from backend, mocked for now
+              trend="up"
+              icon={Wallet}
+            />
+            <Kpi
+              label="Spent this month"
+              value={formatMoney(kpis.spentThisMonth)}
+              delta={`${spendPct}% of budget`}
+              trend={spendPct > 90 ? "down" : "up"}
+              icon={Percent}
+              accent="info"
+            />
+            <Kpi
+              label="Active workers"
+              value={String(kpis.activeWorkers || 0)}
+              delta="+1 this month"
+              trend="up"
+              icon={Users}
+            />
+            <Kpi
+              label="Reports generated"
+              value={String(kpis.reportsGenerated || 0)}
+              delta="+6 vs last mo"
+              trend="up"
+              icon={FileText}
+            />
+          </div>
+        ) : (
+          <div className="text-center text-red-500">Failed to load KPIs</div>
+        )}
 
         {/* Charts */}
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -100,121 +120,137 @@ export default function DashboardPage() {
             }
           >
             <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={monthlySpend}
-                  margin={{ left: -10, right: 8, top: 8, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="0%"
-                        stopColor="var(--color-chart-1)"
-                        stopOpacity={0.35}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--color-chart-1)"
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
-                    <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="0%"
-                        stopColor="var(--color-chart-2)"
-                        stopOpacity={0.25}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="var(--color-chart-2)"
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    stroke="var(--color-border)"
-                    strokeDasharray="3 3"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="month"
-                    stroke="var(--color-muted-foreground)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="var(--color-muted-foreground)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(v) => `$${v / 1000}k`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 8,
-                      border: "1px solid var(--color-border)",
-                      fontSize: 12,
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="budget"
-                    stroke="var(--color-chart-2)"
-                    fill="url(#g2)"
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="actual"
-                    stroke="var(--color-chart-1)"
-                    fill="url(#g1)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {spendLoading ? (
+                <div className="h-full w-full bg-surface/50 animate-pulse rounded-md" />
+              ) : monthlySpend && monthlySpend.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={monthlySpend}
+                    margin={{ left: -10, right: 8, top: 8, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="0%"
+                          stopColor="var(--color-chart-1)"
+                          stopOpacity={0.35}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="var(--color-chart-1)"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                      <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="0%"
+                          stopColor="var(--color-chart-2)"
+                          stopOpacity={0.25}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="var(--color-chart-2)"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      stroke="var(--color-border)"
+                      strokeDasharray="3 3"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => `$${v / 1000}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid var(--color-border)",
+                        fontSize: 12,
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="budget"
+                      stroke="var(--color-chart-2)"
+                      fill="url(#g2)"
+                      strokeWidth={2}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="actual"
+                      stroke="var(--color-chart-1)"
+                      fill="url(#g1)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  No data available
+                </div>
+              )}
             </div>
           </Card>
 
           <Card title="Weekly burn" description="Daily spend, this week">
             <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={weeklyBurn}
-                  margin={{ left: -20, right: 8, top: 8, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    stroke="var(--color-border)"
-                    strokeDasharray="3 3"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="day"
-                    stroke="var(--color-muted-foreground)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="var(--color-muted-foreground)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 8,
-                      border: "1px solid var(--color-border)",
-                      fontSize: 12,
-                    }}
-                  />
-                  <Bar
-                    dataKey="spend"
-                    fill="var(--color-chart-2)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              {burnLoading ? (
+                <div className="h-full w-full bg-surface/50 animate-pulse rounded-md" />
+              ) : weeklyBurn && weeklyBurn.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={weeklyBurn}
+                    margin={{ left: -20, right: 8, top: 8, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      stroke="var(--color-border)"
+                      strokeDasharray="3 3"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="day"
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid var(--color-border)",
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar
+                      dataKey="spend"
+                      fill="var(--color-chart-2)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  No data available
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -253,25 +289,39 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentExpenses.map((e) => (
-                    <tr
-                      key={e.id}
-                      className="border-b border-border last:border-0 hover:bg-surface-muted"
-                    >
-                      <td className="px-5 py-3 font-mono text-xs">{e.id}</td>
-                      <td className="px-5 py-3 text-muted-foreground">
-                        {e.date}
-                      </td>
-                      <td className="px-5 py-3">{e.category}</td>
-                      <td className="px-5 py-3">{e.vendor}</td>
-                      <td className="px-5 py-3 text-right font-medium">
-                        {formatMoney(e.amount)}
-                      </td>
-                      <td className="px-5 py-3">
-                        <StatusPill status={e.status} />
+                  {expensesLoading ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-4 text-muted-foreground">
+                        Loading...
                       </td>
                     </tr>
-                  ))}
+                  ) : recentExpenses && recentExpenses.length > 0 ? (
+                    recentExpenses.map((e) => (
+                      <tr
+                        key={e.id}
+                        className="border-b border-border last:border-0 hover:bg-surface-muted"
+                      >
+                        <td className="px-5 py-3 font-mono text-xs">{e.expense_number || e.id}</td>
+                        <td className="px-5 py-3 text-muted-foreground">
+                          {e.expense_date || e.date}
+                        </td>
+                        <td className="px-5 py-3">{e.category_name || e.category}</td>
+                        <td className="px-5 py-3">{e.vendor_name || e.vendor}</td>
+                        <td className="px-5 py-3 text-right font-medium">
+                          {formatMoney(e.amount)}
+                        </td>
+                        <td className="px-5 py-3">
+                          <StatusPill status={e.status} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="text-center py-4 text-muted-foreground">
+                        No recent expenses
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -326,7 +376,7 @@ function Kpi({
 }
 
 export function StatusPill({ status }: { status: string }) {
-  const s = status.toLowerCase();
+  const s = (status || "").toLowerCase();
   const cls =
     s === "paid" || s === "active"
       ? "bg-brand/10 text-brand"

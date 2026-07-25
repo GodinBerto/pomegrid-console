@@ -12,6 +12,8 @@ import {
   LogOut,
   Menu,
   X,
+  Tags,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,8 +22,10 @@ import { useEffect, useState } from "react";
 const nav = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/expenses", label: "Expenses", icon: Wallet },
+  { to: "/categories", label: "Categories", icon: Tags },
   { to: "/workers", label: "Workers", icon: Users },
   { to: "/reports", label: "Reports", icon: FileText },
+  { to: "/roles", label: "Roles", icon: Shield },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
