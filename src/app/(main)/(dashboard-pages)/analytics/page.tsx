@@ -1,10 +1,6 @@
 "use client";
 import { PageHeader, Section, Card } from "@/components/page-header";
-import {
-  monthlySpend,
-  categoryBreakdown,
-  weeklyBurn,
-} from "@/lib/dashboard-data";
+import { useAnalytics } from "@/query/analytics";
 import {
   AreaChart,
   Area,
@@ -21,13 +17,48 @@ import {
 } from "recharts";
 
 export default function AnalyticsPage() {
-  const savings = monthlySpend.map((m) => ({
-    month: m.month,
-    savings: m.budget - m.actual,
+  const { data: analyticsData, isLoading, isError } = useAnalytics();
+
+  if (isLoading) {
+    return (
+      <>
+        <PageHeader title="Analytics" />
+        <Section>
+          <div className="flex justify-center p-8 text-sm text-muted-foreground">
+            Loading analytics...
+          </div>
+        </Section>
+      </>
+    );
+  }
+
+  if (isError || !analyticsData) {
+    return (
+      <>
+        <PageHeader title="Analytics" />
+        <Section>
+          <div className="flex justify-center p-8 text-sm text-destructive">
+            Failed to load analytics data.
+          </div>
+        </Section>
+      </>
+    );
+  }
+
+  const { 
+    savings: rawSavings = [], 
+    efficiency = [], 
+    category_momentum: categoryBreakdown = [], 
+    weekly_rhythm: weeklyBurn = [] 
+  } = analyticsData || {};
+
+  const savings = rawSavings.map((s) => ({
+    month: s.month,
+    savings: s.budget - s.actual,
   }));
-  const efficiency = [
-    { name: "Efficiency", value: 78, fill: "var(--color-chart-1)" },
-  ];
+
+  const totalMonths = savings.length;
+  const onTargetMonths = savings.filter(s => s.savings >= 0).length;
 
   return (
     <>
@@ -62,11 +93,11 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             </div>
             <div className="text-center -mt-34 pointer-events-none">
-              <p className="text-3xl font-semibold text-brand">78%</p>
+              <p className="text-3xl font-semibold text-brand">{efficiency[0]?.value || 0}%</p>
               <p className="text-xs text-muted-foreground">on-target months</p>
             </div>
             <div className="mt-16 text-xs text-muted-foreground text-center">
-              9 of the last 12 months stayed within budget.
+              {onTargetMonths} of the last {totalMonths} months stayed within budget.
             </div>
           </Card>
 

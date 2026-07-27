@@ -77,9 +77,9 @@ export default function Page() {
                 >
                   Password
                 </label>
-                <a href="#" className="text-xs text-info hover:underline">
+                <Link href="/forgot-password" className="text-xs text-info hover:underline">
                   Forgot?
-                </a>
+                </Link>
               </div>
               <input
                 id="password"

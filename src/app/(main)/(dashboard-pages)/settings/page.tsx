@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader, Section, Card } from "@/components/page-header";
 import { toast } from "sonner";
+import { useNotificationSettings, useUpdateNotificationSettings, useUpdatePassword } from "@/query/settings";
 
 const SECTIONS = [
   "Personal",
@@ -78,11 +79,29 @@ function PersonalTab() {
 }
 
 function NotificationsTab() {
+  const { data: settings, isLoading } = useNotificationSettings();
+  const updateMutation = useUpdateNotificationSettings();
+
   const [prefs, setPrefs] = useState({
     budget: true,
     payroll: true,
     weekly: false,
   });
+
+  useEffect(() => {
+    if (settings) {
+      setPrefs(settings);
+    }
+  }, [settings]);
+
+  if (isLoading) {
+    return (
+      <Card title="Notifications" description="Choose when the console should email you.">
+        <div className="py-4 text-sm text-muted-foreground">Loading preferences...</div>
+      </Card>
+    );
+  }
+
   return (
     <Card
       title="Notifications"
@@ -107,10 +126,11 @@ function NotificationsTab() {
       </div>
       <div className="pt-4">
         <button
-          onClick={() => toast.success("Notifications saved")}
-          className="h-9 px-4 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand/90"
+          disabled={updateMutation.isPending}
+          onClick={() => updateMutation.mutate(prefs)}
+          className="h-9 px-4 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand/90 disabled:opacity-50"
         >
-          Save
+          {updateMutation.isPending ? "Saving..." : "Save"}
         </button>
       </div>
     </Card>
@@ -118,21 +138,45 @@ function NotificationsTab() {
 }
 
 function SecurityTab() {
+  const updatePasswordMutation = useUpdatePassword();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    updatePasswordMutation.mutate(
+      { current_password: currentPassword, new_password: newPassword },
+      {
+        onSuccess: () => {
+          setCurrentPassword("");
+          setNewPassword("");
+          setConfirmPassword("");
+        },
+      }
+    );
+  };
+
   return (
     <Card title="Security" description="Password and access.">
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.success("Password updated");
-        }}
+        onSubmit={handleSubmit}
         className="space-y-4"
       >
-        <Field label="Current password" defaultValue="" type="password" />
-        <Field label="New password" defaultValue="" type="password" />
-        <Field label="Confirm new password" defaultValue="" type="password" />
+        <Field label="Current password" type="password" value={currentPassword} onChange={(e: any) => setCurrentPassword(e.target.value)} />
+        <Field label="New password" type="password" value={newPassword} onChange={(e: any) => setNewPassword(e.target.value)} />
+        <Field label="Confirm new password" type="password" value={confirmPassword} onChange={(e: any) => setConfirmPassword(e.target.value)} />
         <div className="pt-2">
-          <button className="h-9 px-4 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand/90">
-            Update password
+          <button 
+            type="submit"
+            disabled={updatePasswordMutation.isPending}
+            className="h-9 px-4 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand/90 disabled:opacity-50"
+          >
+            {updatePasswordMutation.isPending ? "Updating..." : "Update password"}
           </button>
         </div>
       </form>
@@ -143,10 +187,14 @@ function SecurityTab() {
 function Field({
   label,
   defaultValue,
+  value,
+  onChange,
   type = "text",
 }: {
   label: string;
-  defaultValue: string;
+  defaultValue?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   type?: string;
 }) {
   return (
@@ -155,6 +203,8 @@ function Field({
       <input
         type={type}
         defaultValue={defaultValue}
+        value={value}
+        onChange={onChange}
         className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
       />
     </div>

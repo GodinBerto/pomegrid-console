@@ -40,11 +40,12 @@ export const useLogout = () => {
   });
 };
 
-export const useCurrentUser = () => {
+export const useCurrentUser = (enabled: boolean = true) => {
   return useQuery({
     queryKey: authKeys.user,
     queryFn: getCurrentUser,
     retry: 1,
+    enabled,
   });
 };
 

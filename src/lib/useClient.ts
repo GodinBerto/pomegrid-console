@@ -321,6 +321,15 @@ const clearAuthState = () => {
   useUserStore.getState().logout();
 };
 
+export const hasSession = () => {
+  return Boolean(
+    getAccessToken() ||
+    getRefreshCsrfToken() ||
+    getRefreshToken() ||
+    useUserStore.getState().isLoggedIn
+  );
+};
+
 const extractRefreshPayload = (payload: Record<string, any> | null) => {
   const nestedData =
     payload?.data && typeof payload.data === "object" ? payload.data : payload;
