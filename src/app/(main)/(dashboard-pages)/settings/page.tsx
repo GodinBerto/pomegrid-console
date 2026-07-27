@@ -4,14 +4,13 @@ import { PageHeader, Section, Card } from "@/components/page-header";
 import { toast } from "sonner";
 
 const SECTIONS = [
-  "Organization",
-  "Preferences",
-  "Notifications",
+  "Personal",
   "Security",
+  "Notifications",
 ] as const;
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<(typeof SECTIONS)[number]>("Organization");
+  const [tab, setTab] = useState<(typeof SECTIONS)[number]>("Personal");
 
   return (
     <>
@@ -40,8 +39,7 @@ export default function SettingsPage() {
             </nav>
           </div>
           <div className="lg:col-span-2 space-y-4">
-            {tab === "Organization" && <OrganizationTab />}
-            {tab === "Preferences" && <PreferencesTab />}
+            {tab === "Personal" && <PersonalTab />}
             {tab === "Notifications" && <NotificationsTab />}
             {tab === "Security" && <SecurityTab />}
           </div>
@@ -51,65 +49,24 @@ export default function SettingsPage() {
   );
 }
 
-function OrganizationTab() {
-  return (
-    <>
-      <Card
-        title="Organization"
-        description="These details identify Pomegrid inside the console."
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            toast.success("Organization saved");
-          }}
-          className="space-y-4"
-        >
-          <Field label="Business name" defaultValue="Pomegrid" />
-          <Field
-            label="Contact email"
-            defaultValue="admin@pomegrid.com"
-            type="email"
-          />
-          <Field label="Address" defaultValue="12 Marina Rd, Lagos" />
-          <div className="pt-2">
-            <button className="h-9 px-4 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand/90">
-              Save changes
-            </button>
-          </div>
-        </form>
-      </Card>
-      <Card title="Danger zone" description="Irreversible actions.">
-        <button
-          onClick={() =>
-            toast.error("Organization archive is disabled in demo.")
-          }
-          className="h-9 px-4 rounded-md border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/5"
-        >
-          Archive organization
-        </button>
-      </Card>
-    </>
-  );
-}
 
-function PreferencesTab() {
+function PersonalTab() {
   return (
-    <Card title="Preferences" description="Currency, fiscal, and formatting.">
+    <Card title="Personal" description="Your personal information.">
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          toast.success("Preferences saved");
+          toast.success("Personal information saved");
         }}
         className="space-y-4"
       >
-        <Field label="Currency" defaultValue="USD" />
         <Field
-          label="Fiscal month start (day)"
-          defaultValue="1"
-          type="number"
+          label="Full Name"
+          defaultValue="Pomegrid"
+          type="text"
         />
-        <Field label="Timezone" defaultValue="Africa/Lagos" />
+        <Field label="Phone Number" defaultValue="08012345678" />
+        <Field label="Email" defaultValue="" type="email" />
         <div className="pt-2">
           <button className="h-9 px-4 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand/90">
             Save preferences
