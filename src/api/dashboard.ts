@@ -27,7 +27,7 @@ export interface DashboardOverview {
 export interface MonthlySpendData {
   month: string;
   budget: number;
-  actual: number;
+  actual_spend: number;
 }
 
 export interface WeeklyBurnData {

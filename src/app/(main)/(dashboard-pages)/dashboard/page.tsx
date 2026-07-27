@@ -42,10 +42,6 @@ export default function DashboardPage() {
   const { data: recentExpenses, isLoading: expensesLoading } = useDashboardRecentExpenses();
   const { data: weeklyBurn, isLoading: burnLoading } = useDashboardWeeklyBurn();
 
-
-
-
-
   return (
     <>
       <PageHeader
