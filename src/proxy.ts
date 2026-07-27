@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/login"];
+const PUBLIC_ROUTES = ["/"];
 const PROTECTED_ROUTES: string[] = [];
 const PROTECTED_PREFIXES = [
   "/dashboard",
@@ -21,7 +21,7 @@ export function proxy(request: NextRequest) {
   if (PUBLIC_ROUTES.includes(pathname) || pathname.startsWith("/api")) {
     const token = request.cookies.get("access_token")?.value;
     // If logged in and trying to go to login, send to dashboard
-    if (pathname === "/login" && token) {
+    if (pathname === "/" && token) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next();
@@ -29,7 +29,6 @@ export function proxy(request: NextRequest) {
 
   // Check if route starts with any of the protected prefixes
   const isProtected =
-    pathname === "/" || // Root usually redirects to dashboard
     PROTECTED_ROUTES.includes(pathname) ||
     PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
@@ -39,13 +38,10 @@ export function proxy(request: NextRequest) {
 
     // ❌ Protected but no token → redirect to auth
     if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
-    // Redirect root to dashboard if logged in
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+
 
     // ✅ Protected with token → allow access
     return NextResponse.next();

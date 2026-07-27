@@ -35,7 +35,7 @@ export const useLogout = () => {
     mutationFn: logout,
     onSuccess: () => {
       queryClient.clear();
-      router.push("/login");
+      router.replace("/");
     },
   });
 };

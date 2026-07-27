@@ -12,7 +12,7 @@ function AuthLoader({ children }: { children: React.ReactNode }) {
   const setAuth = useUserStore((state) => state.setAuth);
   
   // Exclude login from auth checks
-  const isPublicPage = pathname === "/login";
+  const isPublicPage = pathname === "/";
 
   const { data: user, isLoading: isUserLoading, isError: isUserError } = useCurrentUser();
   

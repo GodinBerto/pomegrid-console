@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useLogin } from "@/query/auth";
 
 export default function Page() {
-  const navigate = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const loginMutation = useLogin();
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
@@ -48,7 +48,7 @@ export default function Page() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              navigate.push("/dashboard");
+              loginMutation.mutate({ email, password });
             }}
             className="mt-8 space-y-4"
           >
@@ -94,9 +94,10 @@ export default function Page() {
 
             <button
               type="submit"
-              className="w-full h-10 rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition"
+              disabled={loginMutation.isPending}
+              className="w-full h-10 rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition disabled:opacity-50"
             >
-              Sign in with Email
+              {loginMutation.isPending ? "Signing in..." : "Sign in with Email"}
             </button>
 
             <div className="relative py-2">
@@ -112,8 +113,8 @@ export default function Page() {
 
             <button
               type="button"
-              onClick={() => navigate.push("/dashboard")}
-              className="w-full h-10 rounded-md border border-border bg-background text-sm font-medium hover:bg-surface-muted transition inline-flex items-center justify-center gap-2"
+              disabled={loginMutation.isPending}
+              className="w-full h-10 rounded-md border border-border bg-background text-sm font-medium hover:bg-surface-muted transition inline-flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <svg width="16" height="16" viewBox="0 0 24 24">
                 <path

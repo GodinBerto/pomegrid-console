@@ -17,6 +17,7 @@ export const login = async (credentials: any) => {
       response.data.refresh_token
     );
   }
+
   return response.data;
 };
 
