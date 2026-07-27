@@ -3,11 +3,11 @@ import { ApiResponse } from "./auth";
 
 export interface Worker {
   id: string;
-  name: string;
+  full_name: string;
   role: string;
   status: string;
   salary: number;
-  joined: string;
+  joined_date: string;
   created_at?: string;
   updated_at?: string;
 }

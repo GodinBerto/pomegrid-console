@@ -34,7 +34,7 @@ export default function WorkersPage() {
 
   const filtered = workers.filter(
     (w) =>
-      w.name.toLowerCase().includes(q.toLowerCase()) ||
+      w.full_name.toLowerCase().includes(q.toLowerCase()) ||
       w.role.toLowerCase().includes(q.toLowerCase()) ||
       w.id.toLowerCase().includes(q.toLowerCase()),
   );
@@ -55,11 +55,11 @@ export default function WorkersPage() {
   const handleOpenEdit = (w: Worker) => {
     setEditingId(w.id);
     setForm({
-      name: w.name,
+      name: w.full_name,
       role: w.role,
       status: w.status || "Active",
       salary: String(w.salary),
-      joined: w.joined || new Date().toISOString().slice(0, 10),
+      joined: w.joined_date || new Date().toISOString().slice(0, 10),
     });
     setOpen(true);
   };
@@ -73,11 +73,11 @@ export default function WorkersPage() {
     }
 
     const payload = {
-      name: form.name.trim(),
+      full_name: form.name.trim(),
       role: form.role.trim(),
-      status: form.status,
+      status: form.status.toLowerCase().replace(" ", "_"),
       salary: sal,
-      joined: form.joined,
+      joined_date: form.joined,
     };
 
     if (editingId) {
@@ -118,7 +118,7 @@ export default function WorkersPage() {
           <Stat label="Total workers" value={String(workers.length)} />
           <Stat
             label="Active"
-            value={String(workers.filter((w) => w.status === "Active").length)}
+            value={String(workers.filter((w) => w.status === "active").length)}
             tone="brand"
           />
           <Stat
@@ -179,12 +179,12 @@ export default function WorkersPage() {
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2.5">
                             <div className="h-7 w-7 rounded-full bg-linear-to-br from-brand to-info text-white text-xs font-semibold flex items-center justify-center">
-                              {w.name
+                              {w.full_name
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}
                             </div>
-                            <span className="font-medium">{w.name}</span>
+                            <span className="font-medium">{w.full_name}</span>
                           </div>
                         </td>
                         <td className="px-5 py-3 text-muted-foreground">
@@ -194,7 +194,7 @@ export default function WorkersPage() {
                           <StatusPill status={w.status} />
                         </td>
                         <td className="px-5 py-3 text-muted-foreground">
-                          {w.joined}
+                          {w.joined_date}
                         </td>
                         <td className="px-5 py-3 text-right font-medium">
                           ${Number(w.salary).toLocaleString()}
@@ -269,8 +269,8 @@ export default function WorkersPage() {
                   }
                   className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                 >
-                  <option value="Active">Active</option>
-                  <option value="On leave">On leave</option>
+                  <option value="active">Active</option>
+                  <option value="on_leave">On leave</option>
                 </select>
               </label>
             </div>
