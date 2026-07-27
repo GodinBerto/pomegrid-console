@@ -2,10 +2,26 @@ import { apiRequest } from "@/lib/useClient";
 import { ApiResponse } from "./auth";
 
 export interface DashboardOverview {
-  monthlyBudget: number;
-  spentThisMonth: number;
-  activeWorkers: number;
-  reportsGenerated: number;
+  monthly_budget: {
+    value: number;
+    percentage_change: number;
+  }
+  spent_this_month: {
+    value: number;
+    percentage_change: number;
+  }
+  active_workers: {
+    value: number;
+    number_change: number;
+  }
+  reports_generated: {
+    value: number;
+    percentage_change: number;
+  }
+  remaining_budget: {
+    value: number;
+    percentage_change: number;
+  }
 }
 
 export interface MonthlySpendData {

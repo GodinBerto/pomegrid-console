@@ -29,8 +29,11 @@ import {
 } from "@/query/dashboard";
 
 function formatMoney(n: number | undefined) {
-  if (n === undefined) return "$0";
-  return "$" + n.toLocaleString();
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "GHS",
+    maximumFractionDigits: 0,
+  }).format(n ?? 0);
 }
 
 export default function DashboardPage() {
@@ -39,10 +42,9 @@ export default function DashboardPage() {
   const { data: recentExpenses, isLoading: expensesLoading } = useDashboardRecentExpenses();
   const { data: weeklyBurn, isLoading: burnLoading } = useDashboardWeeklyBurn();
 
-  const spendPct =
-    kpis && kpis.monthlyBudget > 0
-      ? Math.round((kpis.spentThisMonth / kpis.monthlyBudget) * 100)
-      : 0;
+
+
+
 
   return (
     <>
@@ -75,31 +77,37 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Kpi
               label="Monthly budget"
-              value={formatMoney(kpis.monthlyBudget)}
-              delta="+3.4%" // Delta could come from backend, mocked for now
-              trend="up"
+              value={formatMoney(kpis.monthly_budget.value)}
+              delta={`${kpis.monthly_budget.percentage_change}% from last month`}
+              trend={
+                kpis.monthly_budget.percentage_change < 0
+                  ? "down"
+                  : kpis.monthly_budget.percentage_change > 0
+                    ? "up"
+                    : "neutral"
+              }
               icon={Wallet}
             />
             <Kpi
               label="Spent this month"
-              value={formatMoney(kpis.spentThisMonth)}
-              delta={`${spendPct}% of budget`}
-              trend={spendPct > 90 ? "down" : "up"}
+              value={formatMoney(kpis.spent_this_month.value)}
+              delta={`${kpis.spent_this_month.percentage_change}% of budget`}
+              trend={kpis.spent_this_month.percentage_change < 0 ? "down" : kpis.spent_this_month.percentage_change > 0 ? "up" : "neutral"}
               icon={Percent}
               accent="info"
             />
             <Kpi
               label="Active workers"
-              value={String(kpis.activeWorkers || 0)}
-              delta="+1 this month"
-              trend="up"
+              value={String(kpis.active_workers.value || 0)}
+              delta={`${String(kpis.active_workers.number_change)} from last month`}
+              trend={kpis.active_workers.number_change < 0 ? "down" : kpis.active_workers.number_change > 0 ? "up" : "neutral"}
               icon={Users}
             />
             <Kpi
-              label="Reports generated"
-              value={String(kpis.reportsGenerated || 0)}
-              delta="+6 vs last mo"
-              trend="up"
+              label="Remaining Budget"
+              value={formatMoney(kpis.remaining_budget.value)}
+              delta={`${kpis.remaining_budget.percentage_change}% of budget`}
+              trend={kpis.remaining_budget.percentage_change < 0 ? "down" : kpis.remaining_budget.percentage_change > 0 ? "up" : "neutral"}
               icon={FileText}
             />
           </div>
@@ -343,7 +351,7 @@ function Kpi({
   label: string;
   value: string;
   delta: string;
-  trend: "up" | "down";
+  trend: "up" | "down" | "neutral";
   icon: React.ComponentType<{ className?: string }>;
   accent?: "brand" | "info";
 }) {
@@ -366,7 +374,7 @@ function Kpi({
       <div className="mt-1 flex items-center gap-1 text-xs">
         <TrendIcon
           className={
-            "h-3 w-3 " + (trend === "up" ? "text-brand" : "text-destructive")
+            "h-3 w-3 " + (trend === "up" ? "text-brand" : trend === "down" ? "text-destructive" : "text-neutral")
           }
         />
         <span className="text-muted-foreground">{delta}</span>
