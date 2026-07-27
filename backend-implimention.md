@@ -1,4 +1,4 @@
-# Todo
+# Todo 1
 - [ ] Fix the proxy @src/proxy.ts: it is supposed to control page routing like if the user is in the dashboard and logged in he wont be able to go to the loggin page and vise versa. Pushing the user to not-found page if there is no page like that in the system.
 - [ ] Fix the apiclient @src/lib/apiClient.ts: make sure all the zustand stores and the use of cookies aare all implimented. and fix the vite import to nextjs imports.
 - [ ] Use the api client @src/lib/apiClient.ts to call the backend

@@ -38,12 +38,12 @@ export default function ExpensesPage() {
   const { data: budgetData, isLoading: budgetLoading } = useBudget();
   const { data: monthlySpend = [], isLoading: chartLoading } = useDashboardBudgetChart();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  
+
   const createExpense = useCreateExpense();
   const updateBudget = useUpdateBudget();
 
   const [budgetVal, setBudgetVal] = useState<number>(0);
-  
+
   useEffect(() => {
     if (budgetData?.budget_amount !== undefined) {
       setBudgetVal(budgetData.budget_amount);
@@ -54,6 +54,7 @@ export default function ExpensesPage() {
   const [form, setForm] = useState({
     expense_date: new Date().toISOString().slice(0, 10),
     category_id: "",
+    category_name: "",
     vendor_name: "",
     amount: "",
     status: "Pending",
@@ -64,11 +65,11 @@ export default function ExpensesPage() {
     const totalByCatMap = new Map<string, number>();
     let totalSpent = 0;
     expenses.forEach(e => {
-      const cat = e.category_name || e.category_id || "Uncategorized";
+      const cat = e.category_name || "Uncategorized";
       totalByCatMap.set(cat, (totalByCatMap.get(cat) || 0) + e.amount);
       totalSpent += e.amount;
     });
-    
+
     const breakdown = Array.from(totalByCatMap.entries())
       .map(([name, value], i) => ({
         name,
@@ -76,7 +77,7 @@ export default function ExpensesPage() {
         color: `var(--color-chart-${(i % 5) + 1})`
       }))
       .sort((a, b) => b.value - a.value);
-      
+
     return { categoryBreakdown: breakdown, totalSpent };
   }, [expenses]);
 
@@ -90,13 +91,14 @@ export default function ExpensesPage() {
       toast.error("Please enter a vendor, category, and amount.");
       return;
     }
-    
+
     createExpense.mutate({
       expense_date: form.expense_date,
       category_id: form.category_id,
+      category_name: form.category_name,
       vendor_name: form.vendor_name,
       amount: amt,
-      status: form.status,
+      status: form.status.toLowerCase(),
     }, {
       onSuccess: () => {
         setOpen(false);
@@ -134,7 +136,7 @@ export default function ExpensesPage() {
             className="lg:col-span-1"
           >
             {budgetLoading ? (
-               <div className="h-40 animate-pulse bg-surface-muted rounded-md" />
+              <div className="h-40 animate-pulse bg-surface-muted rounded-md" />
             ) : (
               <>
                 <label className="text-xs text-muted-foreground">
@@ -192,7 +194,7 @@ export default function ExpensesPage() {
             className="lg:col-span-1"
           >
             {expensesLoading ? (
-               <div className="h-52 animate-pulse bg-surface-muted rounded-md" />
+              <div className="h-52 animate-pulse bg-surface-muted rounded-md" />
             ) : categoryBreakdown.length > 0 ? (
               <>
                 <div className="h-52">
@@ -252,7 +254,7 @@ export default function ExpensesPage() {
           >
             <div className="h-64">
               {chartLoading ? (
-                 <div className="h-full w-full bg-surface-muted animate-pulse rounded-md" />
+                <div className="h-full w-full bg-surface-muted animate-pulse rounded-md" />
               ) : monthlySpend && monthlySpend.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
@@ -395,14 +397,25 @@ export default function ExpensesPage() {
                 <span className="text-xs font-medium">Category</span>
                 <select
                   value={form.category_id}
-                  onChange={(e) =>
-                    setForm({ ...form, category_id: e.target.value })
-                  }
                   className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  onChange={(e) => {
+                    const category = categories.find((c) => c.id === e.target.value);
+
+                    setForm({
+                      ...form,
+                      category_id: category?.id ?? "",
+                      category_name: category?.name ?? "",
+                    });
+                  }}
                 >
-                  <option value="" disabled>Select category...</option>
+                  <option value="" disabled>
+                    Select category...
+                  </option>
+
                   {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
                   ))}
                 </select>
               </label>
