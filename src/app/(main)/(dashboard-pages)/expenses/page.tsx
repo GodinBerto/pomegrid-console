@@ -13,7 +13,7 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { StatusPill } from "../dashboard/page";
-import { useExpenses, useCreateExpense } from "@/query/expenses";
+import { useExpenses, useCreateExpense, useDeleteExpense, useUpdateExpense } from "@/query/expenses";
 import { useBudget, useUpdateBudget } from "@/query/budget";
 import { useCategories } from "@/query/categories";
 import { useDashboardBudgetChart } from "@/query/dashboard";
@@ -51,6 +51,7 @@ export default function ExpensesPage() {
   }, [budgetData]);
 
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({
     expense_date: new Date().toISOString().slice(0, 10),
     category_id: "",
@@ -59,6 +60,9 @@ export default function ExpensesPage() {
     amount: "",
     status: "Pending",
   });
+
+  const deleteExpense = useDeleteExpense();
+  const updateExpense = useUpdateExpense();
 
   // Calculate dynamic category breakdown
   const { categoryBreakdown, totalSpent } = useMemo(() => {
@@ -92,19 +96,53 @@ export default function ExpensesPage() {
       return;
     }
 
-    createExpense.mutate({
+    const payload = {
       expense_date: form.expense_date,
       category_id: form.category_id,
       category_name: form.category_name,
       vendor_name: form.vendor_name,
       amount: amt,
       status: form.status.toLowerCase(),
-    }, {
-      onSuccess: () => {
-        setOpen(false);
-        setForm({ ...form, vendor_name: "", amount: "" });
-      }
+    };
+
+    if (editId) {
+      updateExpense.mutate(
+        { id: editId, payload },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            setEditId(null);
+            setForm({ ...form, vendor_name: "", amount: "" });
+          },
+        }
+      );
+    } else {
+      createExpense.mutate(payload, {
+        onSuccess: () => {
+          setOpen(false);
+          setForm({ ...form, vendor_name: "", amount: "" });
+        },
+      });
+    }
+  }
+
+  function handleEdit(expense: any) {
+    setForm({
+      expense_date: expense.expense_date,
+      category_id: expense.category_id,
+      category_name: expense.category_name,
+      vendor_name: expense.vendor_name,
+      amount: expense.amount.toString(),
+      status: expense.status.charAt(0).toUpperCase() + expense.status.slice(1),
     });
+    setEditId(expense.id);
+    setOpen(true);
+  }
+
+  function handleDelete(id: string) {
+    if (confirm("Are you sure you want to delete this expense?")) {
+      deleteExpense.mutate(id);
+    }
   }
 
   function handleSaveBudget() {
@@ -121,7 +159,18 @@ export default function ExpensesPage() {
         description="Set your monthly budget and see how much the business has used."
         actions={
           <button
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setEditId(null);
+              setForm({
+                expense_date: new Date().toISOString().slice(0, 10),
+                category_id: "",
+                category_name: "",
+                vendor_name: "",
+                amount: "",
+                status: "Pending",
+              });
+              setOpen(true);
+            }}
             className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90"
           >
             <Plus className="h-3.5 w-3.5" /> Add expense
@@ -335,6 +384,9 @@ export default function ExpensesPage() {
                     <th className="text-left font-medium px-5 py-2.5">
                       Status
                     </th>
+                    <th className="text-right font-medium px-5 py-2.5">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -360,6 +412,24 @@ export default function ExpensesPage() {
                         <td className="px-5 py-3">
                           <StatusPill status={e.status} />
                         </td>
+                        <td className="px-5 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleEdit(e)}
+                              className="text-muted-foreground hover:text-foreground transition p-1"
+                              title="Edit expense"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(e.id)}
+                              className="text-muted-foreground hover:text-destructive transition p-1"
+                              title="Delete expense"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))
                   ) : (
@@ -377,9 +447,9 @@ export default function ExpensesPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add expense</DialogTitle>
+            <DialogTitle>{editId ? "Edit expense" : "Add expense"}</DialogTitle>
             <DialogDescription>
-              Record a new business expense.
+              {editId ? "Update expense details." : "Record a new business expense."}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-4">
@@ -467,10 +537,13 @@ export default function ExpensesPage() {
               </button>
               <button
                 type="submit"
-                disabled={createExpense.isPending}
+                disabled={createExpense.isPending || updateExpense.isPending}
                 className="h-9 px-4 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand/90 disabled:opacity-50"
               >
-                {createExpense.isPending ? "Adding..." : "Add expense"}
+                {editId
+                  ? updateExpense.isPending ? "Saving..." : "Save changes"
+                  : createExpense.isPending ? "Adding..." : "Add expense"
+                }
               </button>
             </DialogFooter>
           </form>
