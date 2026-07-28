@@ -37,7 +37,7 @@ export default function ExpensesPage() {
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const { data: budgetDataList, isLoading: budgetLoading } = useBudget();
   const budgetData = budgetDataList?.[0];
-  const { data: monthlySpend = [], isLoading: chartLoading } = useDashboardBudgetChart();
+  const { data: chartsData, isLoading: chartLoading } = useDashboardBudgetChart();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
   const createExpense = useCreateExpense();
@@ -64,6 +64,18 @@ export default function ExpensesPage() {
 
   const deleteExpense = useDeleteExpense();
   const updateExpense = useUpdateExpense();
+
+  const monthlySpendRaw = chartsData?.budget_chart || [];
+  const actualSpendRaw = chartsData?.actual_spend || [];
+
+  const monthlySpend = monthlySpendRaw.map((b) => {
+    const actualPoint = actualSpendRaw.find((a) => a.x === b.x);
+    return {
+      month: b.x,
+      budget: b.y,
+      actual: actualPoint ? actualPoint.y : 0,
+    };
+  });
 
   // Calculate dynamic category breakdown
   const { categoryBreakdown, totalSpent } = useMemo(() => {
