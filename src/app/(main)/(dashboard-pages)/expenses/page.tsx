@@ -35,7 +35,8 @@ function formatMoney(n: number) {
 
 export default function ExpensesPage() {
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
-  const { data: budgetData, isLoading: budgetLoading } = useBudget();
+  const { data: budgetDataList, isLoading: budgetLoading } = useBudget();
+  const budgetData = budgetDataList?.[0];
   const { data: monthlySpend = [], isLoading: chartLoading } = useDashboardBudgetChart();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
@@ -146,9 +147,11 @@ export default function ExpensesPage() {
   }
 
   function handleSaveBudget() {
+    const d = new Date();
     updateBudget.mutate({
+      year: d.getFullYear(),
+      month: d.getMonth() + 1,
       budget_amount: budgetVal,
-      // Pass other required fields if any (year, month depending on backend)
     });
   }
 

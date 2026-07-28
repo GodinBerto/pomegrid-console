@@ -38,9 +38,21 @@ function formatMoney(n: number | undefined) {
 
 export default function DashboardPage() {
   const { data: kpis, isLoading: kpisLoading } = useDashboardOverview();
-  const { data: monthlySpend, isLoading: spendLoading } = useDashboardBudgetChart();
+  const { data: chartsData, isLoading: chartsLoading } = useDashboardBudgetChart();
   const { data: recentExpenses, isLoading: expensesLoading } = useDashboardRecentExpenses();
   const { data: weeklyBurn, isLoading: burnLoading } = useDashboardWeeklyBurn();
+
+  const monthlySpendRaw = chartsData?.budget_chart || [];
+  const actualSpendRaw = chartsData?.actual_spend || [];
+
+  const monthlySpend = monthlySpendRaw.map((b) => {
+    const actualPoint = actualSpendRaw.find((a) => a.x === b.x);
+    return {
+      month: b.x,
+      budget: b.y,
+      actual: actualPoint ? actualPoint.y : 0,
+    };
+  });
 
   return (
     <>
@@ -124,7 +136,7 @@ export default function DashboardPage() {
             }
           >
             <div className="h-72">
-              {spendLoading ? (
+              {chartsLoading ? (
                 <div className="h-full w-full bg-surface/50 animate-pulse rounded-md" />
               ) : monthlySpend && monthlySpend.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -224,7 +236,7 @@ export default function DashboardPage() {
                       vertical={false}
                     />
                     <XAxis
-                      dataKey="day"
+                      dataKey="x"
                       stroke="var(--color-muted-foreground)"
                       fontSize={11}
                       tickLine={false}
@@ -244,7 +256,7 @@ export default function DashboardPage() {
                       }}
                     />
                     <Bar
-                      dataKey="spend"
+                      dataKey="y"
                       fill="var(--color-chart-2)"
                       radius={[4, 4, 0, 0]}
                     />

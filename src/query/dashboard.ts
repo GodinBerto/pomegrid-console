@@ -41,3 +41,4 @@ export const useDashboardWeeklyBurn = () => {
     queryFn: getWeeklyBurnChart,
   });
 };
+

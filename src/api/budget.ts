@@ -9,12 +9,12 @@ export interface MonthlyBudget {
   created_at: string;
 }
 
-export const getBudget = async (): Promise<MonthlyBudget> => {
-  const response = await apiRequest<ApiResponse<MonthlyBudget>>("console/budget");
+export const getBudget = async (): Promise<MonthlyBudget[]> => {
+  const response = await apiRequest<ApiResponse<MonthlyBudget[]>>("console/monthly-budgets");
   return response.data;
 };
 
 export const updateBudget = async (payload: Partial<MonthlyBudget>): Promise<MonthlyBudget> => {
-  const response = await apiRequest<ApiResponse<MonthlyBudget>>("console/budget", "PUT", payload); // Assuming PUT for update
+  const response = await apiRequest<ApiResponse<MonthlyBudget>>("console/monthly-budgets", "POST", payload);
   return response.data;
 };

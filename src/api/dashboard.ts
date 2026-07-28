@@ -30,9 +30,14 @@ export interface MonthlySpendData {
   actual_spend: number;
 }
 
-export interface WeeklyBurnData {
-  day: string;
-  spend: number;
+export interface ChartPoint {
+  x: number | string;
+  y: number;
+}
+
+export interface OverviewChartsResponse {
+  budget_chart: ChartPoint[];
+  actual_spend: ChartPoint[];
 }
 
 export interface RecentExpenseData {
@@ -53,8 +58,8 @@ export const getOverview = async (): Promise<DashboardOverview> => {
   return response.data;
 };
 
-export const getOverviewBudgetChart = async (): Promise<MonthlySpendData[]> => {
-  const response = await apiRequest<ApiResponse<MonthlySpendData[]>>("console/overview-budget-chart");
+export const getOverviewBudgetChart = async (): Promise<OverviewChartsResponse> => {
+  const response = await apiRequest<ApiResponse<OverviewChartsResponse>>("console/overview-budget-chart");
   return response.data;
 };
 
@@ -63,7 +68,7 @@ export const getRecentExpenses = async (): Promise<RecentExpenseData[]> => {
   return response.data;
 };
 
-export const getWeeklyBurnChart = async (): Promise<WeeklyBurnData[]> => {
-  const response = await apiRequest<ApiResponse<WeeklyBurnData[]>>("console/weekly-burn-chart");
+export const getWeeklyBurnChart = async (): Promise<ChartPoint[]> => {
+  const response = await apiRequest<ApiResponse<ChartPoint[]>>("console/weekly-burn-chart");
   return response.data;
 };
