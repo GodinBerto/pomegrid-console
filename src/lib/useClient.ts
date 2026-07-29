@@ -8,7 +8,10 @@ const RAW_API_BASE_URL =
   "/api/v1/";
 const USE_DEV_PROXY =
   process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_USE_DEV_PROXY === "true";
-const USE_PLATFORM_PROXY = process.env.NEXT_PUBLIC_USE_PLATFORM_PROXY === "true";
+const PLATFORM_PROXY_SETTING = process.env.NEXT_PUBLIC_USE_PLATFORM_PROXY;
+const USE_PLATFORM_PROXY =
+  PLATFORM_PROXY_SETTING === "true" ||
+  (process.env.NODE_ENV === "production" && PLATFORM_PROXY_SETTING !== "false");
 const USE_PROXY_TUNNEL = USE_DEV_PROXY || USE_PLATFORM_PROXY;
 const ACCESS_TOKEN_COOKIE = "access_token";
 const REFRESH_TOKEN_COOKIE = "refresh_token";
@@ -31,6 +34,8 @@ let refreshFailed = false;
 
 const normalizeEndpoint = (endpoint: string) => endpoint.replace(/^\/+/, "");
 
+const ensureTrailingSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`);
+
 const getCookieOptions = (expiresInDays: number) => {
   const isHttps =
     typeof window !== "undefined"
@@ -52,16 +57,16 @@ const resolveApiBaseUrl = () => {
   if (USE_PROXY_TUNNEL) {
     try {
       const parsed = new URL(RAW_API_BASE_URL);
-      const pathname = parsed.pathname.startsWith("/")
-        ? parsed.pathname
-        : `/${parsed.pathname}`;
-      return pathname.endsWith("/") ? pathname : `${pathname}/`;
+      const pathname = parsed.pathname && parsed.pathname !== "/" ? parsed.pathname : "/api/v1";
+      return ensureTrailingSlash(pathname.startsWith("/") ? pathname : `/${pathname}`);
     } catch {
-      // If it's already relative, keep it as-is.
+      return ensureTrailingSlash(
+        RAW_API_BASE_URL.startsWith("/") ? RAW_API_BASE_URL : `/${RAW_API_BASE_URL}`,
+      );
     }
   }
 
-  return RAW_API_BASE_URL;
+  return ensureTrailingSlash(RAW_API_BASE_URL);
 };
 
 const API_BASE_URL = resolveApiBaseUrl();
