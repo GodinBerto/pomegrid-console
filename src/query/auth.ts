@@ -12,7 +12,7 @@ export const authKeys = {
 export const useLogin = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: login,
     onSuccess: () => {
@@ -30,7 +30,7 @@ export const useLogin = () => {
 export const useLogout = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {

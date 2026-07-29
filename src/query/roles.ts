@@ -1,8 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getRoles,
-  assignRole,
-} from "@/api/roles";
+import { getRoles, assignRole } from "@/api/roles";
 import { toast } from "sonner";
 
 export const roleKeys = {

@@ -9,12 +9,16 @@ export interface ApiResponse<T> {
 }
 
 export const login = async (credentials: any) => {
-  const response = await apiRequest<ApiResponse<any>>("auth/login", "POST", credentials);
+  const response = await apiRequest<ApiResponse<any>>(
+    "auth/login",
+    "POST",
+    credentials,
+  );
   if (response.data?.access_token) {
     setAuthSession(
       response.data.access_token,
       response.data.csrf_token,
-      response.data.refresh_token
+      response.data.refresh_token,
     );
   }
 
@@ -38,7 +42,8 @@ export const getCurrentUser = async (): Promise<User> => {
   return response.data;
 };
 
-export const getCurrentUserRole = async (): Promise<UserRole> => {
-  const response = await apiRequest<ApiResponse<UserRole>>("console/roles/user");
+export const getCurrentUserRole = async (): Promise<UserRole[]> => {
+  const response =
+    await apiRequest<ApiResponse<UserRole[]>>("console/roles/user");
   return response.data;
 };

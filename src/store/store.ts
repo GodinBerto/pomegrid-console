@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export interface User {
   id: string;
@@ -17,15 +17,25 @@ export interface UserRole {
 interface UserState {
   isLoggedIn: boolean;
   user: User | null;
-  role: UserRole | null;
-  setAuth: (user: User, role: UserRole) => void;
+  roles: UserRole[];
+  setAuth: (user: User, roles: UserRole[]) => void;
   logout: () => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
   isLoggedIn: false,
   user: null,
-  role: null,
-  setAuth: (user, role) => set({ isLoggedIn: true, user, role }),
-  logout: () => set({ isLoggedIn: false, user: null, role: null }),
+  roles: [],
+  setAuth: (user, roles) =>
+    set({
+      isLoggedIn: true,
+      user,
+      roles,
+    }),
+  logout: () =>
+    set({
+      isLoggedIn: false,
+      user: null,
+      roles: [],
+    }),
 }));

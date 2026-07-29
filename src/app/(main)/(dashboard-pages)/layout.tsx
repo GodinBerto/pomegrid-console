@@ -18,7 +18,11 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useLogout } from "@/query/auth";
 
 const nav = [
@@ -178,19 +182,32 @@ export default function AppLayout({
                     <span className="absolute top-2 right-2 h-1.5 w-1.5 bg-brand rounded-full"></span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="w-80 p-0 bg-background border border-border">
+                <PopoverContent
+                  align="end"
+                  className="w-80 p-0 bg-background border border-border"
+                >
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                     <span className="text-sm font-semibold">Notifications</span>
-                    <button className="text-xs text-brand hover:underline">Mark all as read</button>
+                    <button className="text-xs text-brand hover:underline">
+                      Mark all as read
+                    </button>
                   </div>
-                  <div className="max-h-[300px] overflow-y-auto">
+                  <div className="max-h-75 overflow-y-auto">
                     <div className="px-4 py-3 border-b border-border hover:bg-surface-muted/50 transition cursor-pointer">
-                      <p className="text-sm text-foreground">Your weekly report is ready to view.</p>
-                      <p className="text-xs text-muted-foreground mt-1">10 minutes ago</p>
+                      <p className="text-sm text-foreground">
+                        Your weekly report is ready to view.
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        10 minutes ago
+                      </p>
                     </div>
                     <div className="px-4 py-3 hover:bg-surface-muted/50 transition cursor-pointer">
-                      <p className="text-sm text-foreground">Budget threshold exceeded for Logistics.</p>
-                      <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
+                      <p className="text-sm text-foreground">
+                        Budget threshold exceeded for Logistics.
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        2 hours ago
+                      </p>
                     </div>
                   </div>
                 </PopoverContent>
