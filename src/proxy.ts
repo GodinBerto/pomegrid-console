@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/"];
+const PUBLIC_ROUTES = ["/", "/not-found"];
 const PROTECTED_ROUTES: string[] = [];
 const PROTECTED_PREFIXES = [
   "/dashboard",

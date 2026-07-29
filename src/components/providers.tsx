@@ -18,7 +18,10 @@ function AuthLoader({ children }: { children: React.ReactNode }) {
   }, []);
   
   // Exclude login from auth checks
-  const isPublicPage = pathname === "/" || pathname.startsWith("/forgot-password");
+  const isPublicPage =
+    pathname === "/" ||
+    pathname === "/not-found" ||
+    pathname.startsWith("/forgot-password");
   const isSessionActive = mounted ? hasSession() : false;
 
   const { data: user, isLoading: isUserLoading, isError: isUserError } = useCurrentUser(isSessionActive);
