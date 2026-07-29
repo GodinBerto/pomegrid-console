@@ -19,6 +19,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useLogout } from "@/query/auth";
 
 const nav = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -37,6 +38,12 @@ export default function AppLayout({
 }>) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const logoutMutation = useLogout();
+
+  const handleSignOut = () => {
+    setMobileOpen(false);
+    logoutMutation.mutate();
+  };
 
   // Close on route change
   useEffect(() => {
@@ -95,14 +102,15 @@ export default function AppLayout({
         </nav>
       </div>
       <div className="p-3 border-t border-border">
-        <Link
-          href="/"
-          prefetch={false}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={logoutMutation.isPending}
           className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-surface-muted"
         >
           <LogOut className="h-4 w-4" />
-          Sign out
-        </Link>
+          {logoutMutation.isPending ? "Signing out..." : "Sign out"}
+        </button>
       </div>
     </>
   );
@@ -187,14 +195,15 @@ export default function AppLayout({
                   </div>
                 </PopoverContent>
               </Popover>
-              <Link
-                href="/"
-                prefetch={false}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={logoutMutation.isPending}
                 className="h-8 w-8 rounded-full bg-linear-to-br from-info to-brand text-white text-xs font-bold flex items-center justify-center"
                 title="Sign out"
               >
                 A
-              </Link>
+              </button>
             </div>
           </div>
         </header>

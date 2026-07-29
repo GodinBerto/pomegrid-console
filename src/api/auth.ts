@@ -23,7 +23,9 @@ export const login = async (credentials: any) => {
 
 export const logout = async () => {
   try {
-    await apiRequest("auth/logout", "POST");
+    await apiRequest("auth/signout", "POST", undefined, false, {
+      skipRefresh: true,
+    });
   } catch (e) {
     // Ignore errors on logout
   } finally {
