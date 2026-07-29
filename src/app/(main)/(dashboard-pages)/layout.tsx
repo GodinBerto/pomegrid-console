@@ -79,6 +79,7 @@ export default function AppLayout({
               <Link
                 key={item.to}
                 href={item.to}
+                prefetch={false}
                 className={
                   "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition " +
                   (active
@@ -96,6 +97,7 @@ export default function AppLayout({
       <div className="p-3 border-t border-border">
         <Link
           href="/"
+          prefetch={false}
           className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-surface-muted"
         >
           <LogOut className="h-4 w-4" />
@@ -138,6 +140,7 @@ export default function AppLayout({
             </button>
             <Link
               href="/dashboard"
+              prefetch={false}
               className="flex items-center gap-2 lg:hidden"
             >
               <div className="h-7 w-7 rounded-md bg-linear-to-br from-brand to-info flex items-center justify-center text-white text-sm font-bold">
@@ -186,6 +189,7 @@ export default function AppLayout({
               </Popover>
               <Link
                 href="/"
+                prefetch={false}
                 className="h-8 w-8 rounded-full bg-linear-to-br from-info to-brand text-white text-xs font-bold flex items-center justify-center"
                 title="Sign out"
               >

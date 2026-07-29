@@ -65,6 +65,7 @@ export default function DashboardPage() {
             </button>
             <Link
               href="/expenses"
+              prefetch={false}
               className="h-8 px-3 inline-flex items-center rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90"
             >
               New expense
@@ -278,6 +279,7 @@ export default function DashboardPage() {
             action={
               <Link
                 href="/expenses"
+                prefetch={false}
                 className="text-xs text-info hover:underline inline-flex items-center gap-1"
               >
                 View all <ArrowUpRight className="h-3 w-3" />
